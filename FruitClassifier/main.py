@@ -47,7 +47,7 @@ X = new_df.drop(["label"], axis=1)
 X_train, X_test, y_train, y_test = train_test_split(X, 
                                                     y, 
                                                     test_size=0.3, 
-                                                    random_state = 42)
+                                                    random_state=42)
 
 # fit model
 dtc = DecisionTreeClassifier(random_state=42)
