@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import MinMaxScaler
 
 df = pd.read_csv("manual classification network.csv")
 
@@ -26,6 +27,10 @@ new_df = pd.concat([new_df, df.drop(columns=[df.columns[0]])], axis=1)
 
 # rename the columns for consistency
 new_df.columns = [x.lower() for x in new_df.columns]
+
+# standardize the shape numbers using min-max scaling
+scaler = MinMaxScaler()
+new_df[["length", "width", "height"]] = scaler.fit_transform(new_df[["length", "width", "height"]])
 
 # drop unnecessary columns
 new_df.drop(["dull", "rough"], axis=1, inplace=True)
@@ -57,7 +62,7 @@ print(f'Accuracy: {accuracy}')
 
 # visualize tree
 plt.figure(figsize=(8, 8))
-plot_tree(dtc, feature_names=X.columns, class_names=list(set(y)))
+plot_tree(dtc, feature_names=X.columns, class_names=y.unique())
 plt.show()
 
 
