@@ -21,7 +21,7 @@ class CUSTOM_AI_MODEL:
                 # additive Gaussian mutation?
                 self.genotype = genotype.copy()
                 for i in range(len(self.genotype)):
-                    if random.random() < 0.2:
+                    if random.random() < 0.15:
                         self.genotype[i] += np.random.normal(0, 0.2)
 
         self.fit_score = 0.0
@@ -43,29 +43,30 @@ class CUSTOM_AI_MODEL:
         max_value = -1000
         best_piece = None
         rotated = piece
-        for i in range(4):
+        for _ in range(4):
             r = rotated
-            
-            for x in range(board.width):
+            piece_width = max([b[0] for b in r.body]) + 1
+            for x in range(board.width - piece_width + 1):
                 try:
                     y = board.drop_height(r, x)
                 except:
                     continue
-
-                board_copy = deepcopy(board.board)
+        
+                board_copy = np.copy(board.board)
                 for pos in r.body:
-                    board_copy[y + pos[1]][x + pos[0]] = True
-                    
+                    board_copy[y + pos[1], x + pos[0]] = True
+        
                 self.current_landing_height = y
                 np_board = bool_to_np(board_copy)
                 c = self.valuate(np_board)
-
+        
                 if c > max_value:
                     max_value = c
                     best_x = x
                     best_piece = r
-                    
+        
             rotated = rotated.get_next_rotation()
+
             if best_piece is None:
                 return 0, piece
             
@@ -101,8 +102,9 @@ class CUSTOM_AI_MODEL:
             row_transition,
             max_peak,
             landing_height
-        ])
+        ], dtype=float)
         
+        # ratings = min_max_norm(ratings, -1, 1)
         rating = np.dot(self.genotype, ratings)
         return rating
 
@@ -111,8 +113,9 @@ class CUSTOM_AI_MODEL:
 def get_peaks(area):
     peaks = np.array([])
     for col in range(area.shape[1]):
-        if 1 in area[:, col]:
-            p = area.shape[0] - np.argmax(area[:, col], axis=0)
+        col_vals = area[:, col]
+        if 1 in col_vals:
+            p = area.shape[0] - np.argmax(col_vals)
             peaks = np.append(peaks, p)
         else:
             peaks = np.append(peaks, 0)
@@ -130,12 +133,11 @@ def get_holes(peaks, area):
     # Count from peaks to bottom
     holes = []
     for col in range(area.shape[1]):
-        start = -peaks[col]
-        # If there's no holes i.e. no blocks on that column
-        if start == 0:
+        start = max(0, int(area.shape[0] - peaks[col]))
+        if start >= area.shape[0]:
             holes.append(0)
         else:
-            holes.append(np.count_nonzero(area[int(start) :, col] == 0))
+            holes.append(np.count_nonzero(area[start:, col] == 0))
     return holes   
 
 
@@ -218,13 +220,7 @@ def min_max_norm(array, desired_min=0, desired_max=1):
     array_max = np.max(array)
     
     if array_max == array_min:
-        return np.full_like(array, desired_min) 
+        return np.full_like(array, desired_min, dtype=float) 
     
     normalized_array = (array - array_min) / (array_max - array_min) * (desired_max - desired_min) + desired_min
     return normalized_array
-
-
-
-
-        
-            

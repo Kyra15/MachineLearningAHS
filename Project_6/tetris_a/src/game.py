@@ -37,7 +37,10 @@ class Game:
         elif mode == "random":
             self.ai = RandomChoice_NOT_AI()
         elif mode == "student":
-            self.ai = CUSTOM_AI_MODEL()
+            if agent == None:
+                self.ai = CUSTOM_AI_MODEL()
+            else:
+                self.ai = agent
         else:
             self.ai = None
 
