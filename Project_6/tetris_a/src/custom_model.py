@@ -6,13 +6,13 @@ from board import Board
 import random
 from genetic_helpers import *
 from collections import deque
+import cma
 
 
 class CUSTOM_AI_MODEL:
     def __init__(self, genotype=None, aggregate='lin', num_features=11, mutate=False,  noise_sd=.2):
 
         if genotype is None:
-            # ([peak_sum, holes, wells, bumpiness, height, barricades, cleared])
             self.genotype = np.array([random.uniform(-5,5) for _ in range(num_features)])
         else:
             if mutate == False:
@@ -21,8 +21,10 @@ class CUSTOM_AI_MODEL:
                 # additive Gaussian mutation?
                 self.genotype = genotype.copy()
                 for i in range(len(self.genotype)):
-                    if random.random() < 0.15:
-                        self.genotype[i] += np.random.normal(0, 0.2)
+                    if random.random() < 0.05:
+                        self.genotype[i] += np.random.normal(0, 1.0)
+                    elif random.random() < 0.2:
+                        self.genotype[i] += np.random.normal(0, 0.5)
 
         self.fit_score = 0.0
         self.fit_rel = 0.0
@@ -104,10 +106,9 @@ class CUSTOM_AI_MODEL:
             landing_height
         ], dtype=float)
         
-        # ratings = min_max_norm(ratings, -1, 1)
         rating = np.dot(self.genotype, ratings)
         return rating
-
+        
 
     
 def get_peaks(area):
